@@ -71,6 +71,7 @@ header {
   padding: 20px;
   background-image: url('../images/scrabble-tile-holder-406774_640.png');
   background-size: cover;
+  background-position-x: -20px;
   display: flex;
   justify-content: center;
   align-items: center;
