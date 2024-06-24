@@ -1,0 +1,138 @@
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f9;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+#main {
+  width: 90%;
+  max-width: 900px;
+  margin: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+header {
+  width: 100%;
+  padding: 20px;
+  background-color: #4CAF50;
+  text-align: center;
+}
+
+#logo {
+  width: 50%;
+  max-width: 300px;
+}
+
+#scoreboard {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ddd;
+}
+
+.score-item {
+  font-size: 1.2em;
+}
+
+#board {
+  width: 100%;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px;
+  background-color: #fff;
+  flex-wrap: nowrap;
+}
+
+#rack {
+  width: 100%;
+  padding: 20px;
+  background-image: url('../images/scrabble-tile-holder-406774_640.png');
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+#buttons {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.btn {
+  padding: 10px 20px;
+  font-size: 1em;
+  color: #fff;
+  background-color: #4CAF50;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn:disabled {
+  background-color: #9e9e9e;
+}
+
+.btn:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.tile {
+  width: 80px;
+  height: 88px;
+  margin: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.slot {
+  width: 80px;
+  height: 88px;
+  margin: 5px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-size: cover;
+}
+
+.board-blank {
+  background-image: url('../images/blank.png');
+}
+
+.board-double-word {
+  background-image: url('../images/double_word.png');
+}
+
+.board-double-letter {
+  background-image: url('../images/double_letter.png');
+}
+
+.drop-hover {
+  box-shadow: 0 0 5px 2px #4CAF50;
+  transition: box-shadow 0.2s;
+}
+
+.hovering {
+  box-shadow: 0 0 10px 5px #999;
+  transition: box-shadow 0.2s;
+}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrabble Game</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div id="main">
+        <header>
+            <img src="images/Scrabble-Logo.jpg" alt="Scrabble" id="logo">
+        </header>
+        <div id="scoreboard">
+            <div class="score-item">
+                <span class="label">Word: </span><span id="word"></span>
+            </div>
+            <div class="score-item">
+                <span class="label">Score: </span><span id="total-score">0</span>(+<span id="cur-score"></span>)
+            </div>
+            <div class="score-item">
+                <span class="label">Remaining tiles: </span><span id="bag"></span>
+            </div>
+        </div>
+        <div id="board"></div>
+        <div id="buttons">
+            <button id="next-word" class="btn" disabled>Next Word</button>
+            <button id="reset" class="btn">Reset</button>
+        </div>
+        <div id="rack"></div>
+    </div>
+
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <script src="js/jquery-ui.min.js"></script>
+    <script src="js/script.js"></script>
+</body>
+
+</html>
