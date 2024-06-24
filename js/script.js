@@ -56,7 +56,7 @@ $(document).ready(function () {
     ObjScrabble.init();
 
     function createBoard() {
-        $('#board').empty(); // Clear existing board slots
+        $('#board').empty();
         for (let i = 0; i < BOARD_SLOTS; i++) {
             let slotClass = 'board-blank';
             if (i === 1 || i === 5) slotClass = 'board-double-word';
@@ -80,7 +80,7 @@ $(document).ready(function () {
 
     function drawHand() {
         const $rack = $('#rack');
-        $rack.empty(); // Clear existing tiles
+        $rack.empty();
         const $tile = $('<img>').addClass('tile draggable ui-widget-content');
         for (let i = 0; i < RACK_MAX_TILES; ++i) {
             const key = ObjScrabble.drawTileFromBag();
@@ -102,11 +102,13 @@ $(document).ready(function () {
         let score = 0;
         let letterMult = 1;
         let wordMult = 1;
+        let anySlotFilled = false;
 
         $('.slot').each(function () {
             const $this = $(this);
             const $child = $this.find('img');
             if ($child.length > 0) {
+                anySlotFilled = true;
                 stringWord += $child.attr('letter');
                 const letterVal = parseInt($child.attr('value'), 10);
                 letterMult = parseInt($this.attr('letter-mult'), 10);
@@ -116,9 +118,26 @@ $(document).ready(function () {
                 stringWord += '.';
             }
         });
+
         $('#word').text(stringWord);
         $('#cur-score').text(score * wordMult);
         $('#bag').text(ObjScrabble.bag.length);
+
+        if (anySlotFilled) {
+            $('#next-word').prop('disabled', false);
+        } else {
+            $('#next-word').prop('disabled', true);
+        }
+
+        if (stringWord.indexOf('.') === -1) {
+            setTimeout(() => {
+                $('.slot').empty();
+                drawHand();
+                totalScore += score * wordMult;
+                $('#total-score').text(totalScore);
+                refreshScoreboard();
+            }, 1000);
+        }
     }
 
     function makeTilesDraggable() {
@@ -144,7 +163,6 @@ $(document).ready(function () {
                 if ($this.children().length === 0) {
                     ui.draggable.detach().css({ top: 0, left: 0 }).addClass('drawn').appendTo($this);
                     refreshScoreboard();
-                    $('#next-word').prop('disabled', false);
                 }
             }
         });
@@ -172,12 +190,14 @@ $(document).ready(function () {
 
     $('#next-word').on('click', function (e) {
         e.preventDefault();
-        $('.slot').empty();
-        drawHand();
-        const curScore = parseInt($('#cur-score').text(), 10);
-        totalScore += curScore;
-        $('#total-score').text(totalScore);
-        refreshScoreboard();
+        if (!$(this).prop('disabled')) {
+            $('.slot').empty();
+            drawHand();
+            const curScore = parseInt($('#cur-score').text(), 10);
+            totalScore += curScore;
+            $('#total-score').text(totalScore);
+            refreshScoreboard();
+        }
     });
 
     createBoard();
