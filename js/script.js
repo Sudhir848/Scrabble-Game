@@ -2,6 +2,7 @@ $(document).ready(function () {
     const RACK_MAX_TILES = 7;
     const BOARD_SLOTS = 7;
     let totalScore = 0;
+    let firstTilePlaced = false;
 
     var ObjScrabble = {
         dictTiles: [],
@@ -160,8 +161,13 @@ $(document).ready(function () {
             hoverClass: 'drop-hover',
             drop: function (event, ui) {
                 const $this = $(this);
-                if ($this.children().length === 0) {
-                    ui.draggable.detach().css({ top: 0, left: 0 }).addClass('drawn').appendTo($this);
+                const $draggable = ui.draggable;
+
+                if ($this.children().length === 0 && validatePlacement($this)) {
+                    $draggable.detach().css({ top: 0, left: 0 }).addClass('drawn').appendTo($this);
+                    $draggable.draggable('option', 'revert', false);
+                    $draggable.draggable('disable');
+                    firstTilePlaced = true;
                     refreshScoreboard();
                 }
             }
@@ -178,6 +184,21 @@ $(document).ready(function () {
         });
     }
 
+    function validatePlacement(slot) {
+        if (!firstTilePlaced) {
+            return true;
+        }
+
+        const $slots = $('.slot');
+        const index = $slots.index(slot);
+        const left = index > 0 ? $slots.eq(index - 1).find('img').length > 0 : false;
+        const right = index < $slots.length - 1 ? $slots.eq(index + 1).find('img').length > 0 : false;
+        const above = index - BOARD_SLOTS >= 0 ? $slots.eq(index - BOARD_SLOTS).find('img').length > 0 : false;
+        const below = index + BOARD_SLOTS < $slots.length ? $slots.eq(index + BOARD_SLOTS).find('img').length > 0 : false;
+
+        return left || right || above || below;
+    }
+
     $('#reset').on('click', function (e) {
         e.preventDefault();
         ObjScrabble.init();
@@ -185,6 +206,7 @@ $(document).ready(function () {
         drawHand();
         refreshScoreboard();
         totalScore = 0;
+        firstTilePlaced = false;
         $('#total-score').text(totalScore);
     });
 
