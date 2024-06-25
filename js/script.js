@@ -133,10 +133,12 @@ $(document).ready(function () {
         if (stringWord.indexOf('.') === -1) {
             setTimeout(() => {
                 $('.slot').empty();
+                firstTilePlaced = false;
                 drawHand();
                 totalScore += score * wordMult;
                 $('#total-score').text(totalScore);
                 refreshScoreboard();
+                makeTilesDroppable();
             }, 1000);
         }
     }
@@ -214,12 +216,13 @@ $(document).ready(function () {
         e.preventDefault();
         if (!$(this).prop('disabled')) {
             $('.slot').empty();
+            firstTilePlaced = false;
             drawHand();
             const curScore = parseInt($('#cur-score').text(), 10);
             totalScore += curScore;
             $('#total-score').text(totalScore);
-            firstTilePlaced = false;
             refreshScoreboard();
+            makeTilesDroppable();
         }
     });
 
