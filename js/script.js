@@ -64,8 +64,8 @@ $(document).ready(function () {
             if (i === 3) slotClass = 'board-double-letter';
 
             const $slot = $('<div>').addClass(slotClass + ' slot droppable ui-widget-header')
-                                    .attr('letter-mult', 1)
-                                    .attr('word-mult', 1);
+                .attr('letter-mult', 1)
+                .attr('word-mult', 1);
 
             if (slotClass === 'board-double-word') {
                 $slot.attr('word-mult', 2);
@@ -218,6 +218,7 @@ $(document).ready(function () {
             const curScore = parseInt($('#cur-score').text(), 10);
             totalScore += curScore;
             $('#total-score').text(totalScore);
+            firstTilePlaced = false;
             refreshScoreboard();
         }
     });
