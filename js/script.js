@@ -1,25 +1,38 @@
-/*
-File: script.js
-Assignment: Scrabble Game
-Sudhir Gunaseelan, UMass Lowell Computer Science, Sudhir_Gunaseelan@student.uml.edu
-Copyright (c) 2024 by Sudhir. All rights reserved. May be freely copied or
-excerpted for educational purposes with credit to the author.
-Updated by SG on June 26, 2024, at 1:00 PM.
-Instructor: Professor Wenjin Zhou
-Help: w3schools, Google
-Basic Description: This file provides the functionality of the game making it more interactive and dynamic.
-*/
-
 $(document).ready(function () {
     const RACK_MAX_TILES = 7;
     const BOARD_SLOTS = 7;
+    const TOTAL_TILES = 96;
     let totalScore = 0;
+    let currentWordScore = 0;
     let firstTilePlaced = false;
+    let validWords = [];
+
+    // Function to validate if a word is in the dictionary
+    function isValidWord(word) {
+        console.log(`Validating word: ${word}`);
+        return validWords.includes(word.toLowerCase());
+    }
+
+    // Function to load the dictionary from a file
+    function loadDictionary() {
+        return $.ajax({
+            url: 'dictionary.txt',
+            dataType: 'text',
+            success: function (data) {
+                validWords = data.split('\n').map(word => word.trim().toLowerCase());
+                console.log(`Dictionary loaded. Total words: ${validWords.length}`);
+            },
+            error: function () {
+                alert('Failed to load the dictionary.');
+            }
+        });
+    }
 
     var ObjScrabble = {
         dictTiles: [],
         bag: [],
         init: function () {
+            // Initialize tile frequencies and values
             this.dictTiles = {
                 'A': { value: 1, freq: 9, quantity: 9 },
                 'B': { value: 3, freq: 2, quantity: 2 },
@@ -50,24 +63,34 @@ $(document).ready(function () {
                 '_': { value: 0, freq: 2, quantity: 2 }
             };
 
+            this.resetBag();
+        },
+        // Reset the bag with the initial quantities of tiles
+        resetBag: function() {
             this.bag = [];
             for (let key in this.dictTiles) {
                 for (let i = 0; i < this.dictTiles[key].quantity; ++i) {
                     this.bag.push(key);
                 }
             }
+            console.log(`Bag reset. Total tiles: ${this.bag.length}`);
         },
+        // Draw a random tile from the bag
         drawTileFromBag: function () {
-            if (this.bag.length < 1)
+            if (this.bag.length < 1) {
+                console.log("Bag is empty.");
                 return null;
+            }
             const randIndex = Math.floor(Math.random() * this.bag.length);
             const tile = this.bag.splice(randIndex, 1)[0];
+            console.log(`Drawn tile: ${tile}`);
             return tile;
         }
     };
 
     ObjScrabble.init();
 
+    // Function to create the game board
     function createBoard() {
         $('#board').empty();
         for (let i = 0; i < BOARD_SLOTS; i++) {
@@ -91,11 +114,38 @@ $(document).ready(function () {
         makeTilesDroppable();
     }
 
-    function drawHand() {
+    // Function to draw tiles into the player's hand
+    function drawHand(existingTiles = []) {
         const $rack = $('#rack');
         $rack.empty();
+        console.log("Rack cleared");
+
+        // Check if the game is over
+        if (ObjScrabble.bag.length <= 3) {
+            const $gameOverMessage = $('<div>').addClass('game-over').text('GAME OVER');
+            $rack.append($gameOverMessage);
+            console.log("Game Over");
+            $('#next-word').prop('disabled', true);
+            $('#reset').prop('disabled', false);
+            return;
+        }
+
         const $tile = $('<img>').addClass('tile draggable ui-widget-content');
-        for (let i = 0; i < RACK_MAX_TILES; ++i) {
+
+        // Append existing tiles back to the rack
+        existingTiles.forEach(tile => {
+            const strSrc = 'images/tiles/Scrabble_Tile_' + tile + '.jpg';
+            const $existingTile = $tile.clone()
+                .attr('value', ObjScrabble.dictTiles[tile].value)
+                .attr('letter', tile)
+                .attr('src', strSrc)
+                .appendTo('#rack');
+            console.log(`Added existing tile to rack: ${tile}`);
+        });
+
+        // Draw new tiles to fill the rack up to RACK_MAX_TILES
+        const newTilesCount = RACK_MAX_TILES - existingTiles.length;
+        for (let i = 0; i < newTilesCount; ++i) {
             const key = ObjScrabble.drawTileFromBag();
             if (key) {
                 const strSrc = 'images/tiles/Scrabble_Tile_' + key + '.jpg';
@@ -104,27 +154,30 @@ $(document).ready(function () {
                     .attr('letter', key)
                     .attr('src', strSrc)
                     .appendTo('#rack');
+                console.log(`Added new tile to rack: ${key}`);
             }
         }
 
         makeTilesDraggable();
     }
 
+    // Function to update the scoreboard based on current placements
     function refreshScoreboard() {
         let stringWord = "";
         let score = 0;
-        let letterMult = 1;
         let wordMult = 1;
         let anySlotFilled = false;
+        let tilesPlaced = 0;
 
         $('.slot').each(function () {
             const $this = $(this);
             const $child = $this.find('img');
             if ($child.length > 0) {
                 anySlotFilled = true;
+                tilesPlaced++;
                 stringWord += $child.attr('letter');
                 const letterVal = parseInt($child.attr('value'), 10);
-                letterMult = parseInt($this.attr('letter-mult'), 10);
+                const letterMult = parseInt($this.attr('letter-mult'), 10);
                 score += (letterVal * letterMult);
                 wordMult *= parseInt($this.attr('word-mult'), 10);
             } else {
@@ -132,29 +185,25 @@ $(document).ready(function () {
             }
         });
 
+        currentWordScore = score * wordMult;
         $('#word').text(stringWord);
-        $('#cur-score').text(score * wordMult);
+        $('#cur-score').text(currentWordScore);
         $('#bag').text(ObjScrabble.bag.length);
 
-        if (anySlotFilled) {
-            $('#next-word').prop('disabled', false);
-        } else {
-            $('#next-word').prop('disabled', true);
+        const cleanedWord = stringWord.replace(/\./g, '');
+        console.log(`Formed word: ${cleanedWord}`);
+
+        if (cleanedWord.length > 2 && cleanedWord.length === tilesPlaced && isValidWord(cleanedWord)) {
+            console.log(`Valid word formed: ${cleanedWord}`);
+            totalScore += currentWordScore;
+            $('#total-score').text(totalScore);
+            setTimeout(() => moveToNextWord(true), 500);
         }
 
-        if (stringWord.indexOf('.') === -1) {
-            setTimeout(() => {
-                $('.slot').empty();
-                firstTilePlaced = false;
-                drawHand();
-                totalScore += score * wordMult;
-                $('#total-score').text(totalScore);
-                refreshScoreboard();
-                makeTilesDroppable();
-            }, 1000);
-        }
+        $('#reset').prop('disabled', !anySlotFilled);
     }
 
+    // Make tiles draggable
     function makeTilesDraggable() {
         $('.tile').draggable({
             revert: true,
@@ -169,6 +218,7 @@ $(document).ready(function () {
         });
     }
 
+    // Make slots droppable
     function makeTilesDroppable() {
         $('.slot').droppable({
             tolerance: 'intersect',
@@ -198,6 +248,7 @@ $(document).ready(function () {
         });
     }
 
+    // Validate the placement of a tile
     function validatePlacement(slot) {
         if (!firstTilePlaced) {
             return true;
@@ -213,33 +264,59 @@ $(document).ready(function () {
         return left || right || above || below;
     }
 
+    // Move to the next word, optionally keeping existing tiles
+    function moveToNextWord(validWord = false) {
+        console.log("moveToNextWord called");
+
+        // Collect existing tiles from the rack if a valid word is formed
+        const existingTiles = [];
+        if (validWord) {
+            $('#rack .tile').each(function () {
+                existingTiles.push($(this).attr('letter'));
+            });
+        }
+
+        // Clear the rack and draw new tiles (keeping existing tiles if a valid word is formed)
+        drawHand(validWord ? existingTiles : []);
+
+        // Clear the board and reset for the next word
+        $('.slot').empty();
+        firstTilePlaced = false;
+        currentWordScore = 0; // Reset current word score before refreshing the scoreboard
+        refreshScoreboard();
+        makeTilesDroppable();
+    }
+
+    // Reset button handler
     $('#reset').on('click', function (e) {
         e.preventDefault();
         ObjScrabble.init();
         createBoard();
         drawHand();
         refreshScoreboard();
-        totalScore = 0;
+        totalScore = 0; // Reset total score
+        currentWordScore = 0; // Reset current word score
         firstTilePlaced = false;
         $('#total-score').text(totalScore);
+        $('#cur-score').text(currentWordScore);
+        $('#bag').text(TOTAL_TILES);
+        $('#next-word').prop('disabled', false); // Next Word button is enabled on reset
     });
 
+    // Next word button handler
     $('#next-word').on('click', function (e) {
         e.preventDefault();
-        if (!$(this).prop('disabled')) {
-            $('.slot').empty();
-            firstTilePlaced = false;
-            drawHand();
-            const curScore = parseInt($('#cur-score').text(), 10);
-            totalScore += curScore;
-            $('#total-score').text(totalScore);
-            refreshScoreboard();
-            makeTilesDroppable();
-        }
+        console.log("#next-word clicked");
+        moveToNextWord(); // Move to next word without keeping existing tiles
     });
 
-    createBoard();
-    drawHand();
-    refreshScoreboard();
-    makeTilesDroppable();
+    // Load dictionary and initialize the game
+    loadDictionary().then(() => {
+        createBoard();
+        drawHand();
+        refreshScoreboard();
+        $('#bag').text(TOTAL_TILES);
+        $('#next-word').prop('disabled', false); // Next Word button is enabled
+        makeTilesDroppable();
+    });
 });
