@@ -1,15 +1,4 @@
-/*
-File: style.css
-Assignment: Scrabble Game
-Sudhir Gunaseelan, UMass Lowell Computer Science, Sudhir_Gunaseelan@student.uml.edu
-Copyright (c) 2024 by Sudhir. All rights reserved. May be freely copied or
-excerpted for educational purposes with credit to the author.
-Updated by SG on June 26, 2024, at 1:00 PM.
-Instructor: Professor Wenjin Zhou
-Help: w3schools, Google
-Basic Description: This file provides the styling for the game which enhances the visual appeal and design.
-*/
-
+/* General Styles */
 body {
   font-family: 'Arial', sans-serif;
   background-color: #e0f7fa;
@@ -158,4 +147,115 @@ header {
 .hovering {
   box-shadow: 0 0 10px 5px #999;
   transition: box-shadow 0.2s;
+}
+
+.game-over {
+  font-size: 3em;
+  color: red;
+  word-spacing: 10px;
+  text-align: center;
+  font-weight: bold;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Media Queries for Responsiveness */
+
+/* Adjust styles for small screens */
+@media (max-width: 600px) {
+  #main {
+    width: 100%;
+    margin: 10px;
+  }
+
+  header {
+    padding: 15px;
+  }
+
+  #logo {
+    max-width: 200px;
+  }
+
+  #scoreboard {
+    flex-direction: column;
+    align-items: center;
+    padding: 5px;
+  }
+
+  .score-item {
+    font-size: 1em;
+    margin: 5px 0;
+  }
+
+  #board {
+    flex-wrap: wrap;
+    padding: 10px;
+  }
+
+  #rack {
+    padding: 10px;
+    background-size: contain;
+  }
+
+  #buttons {
+    flex-direction: column;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .tile,
+  .slot {
+    width: 60px;
+    height: 66px;
+    margin: 3px;
+  }
+}
+
+/* Adjust styles for medium screens */
+@media (min-width: 601px) and (max-width: 1024px) {
+  #main {
+    width: 95%;
+    margin: 15px;
+  }
+
+  header {
+    padding: 18px;
+  }
+
+  #logo {
+    max-width: 250px;
+  }
+
+  .score-item {
+    font-size: 1.1em;
+  }
+
+  #board {
+    flex-wrap: wrap;
+    padding: 15px;
+  }
+
+  #rack {
+    padding: 15px;
+  }
+
+  .btn {
+    padding: 12px 18px;
+  }
+
+  .tile,
+  .slot {
+    width: 70px;
+    height: 77px;
+    margin: 4px;
+  }
 }
