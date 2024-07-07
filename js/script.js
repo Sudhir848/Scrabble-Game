@@ -1,3 +1,9 @@
+/*
+Copyright (c) 2024 by Sudhir Gunaseelan. All rights reserved. May be freely copied or
+excerpted for educational purposes with credit to the author.
+Updated by SG on July 6, 2024, at 2:00 PM.
+*/
+
 $(document).ready(function () {
     const RACK_MAX_TILES = 7;
     const BOARD_SLOTS = 7;
