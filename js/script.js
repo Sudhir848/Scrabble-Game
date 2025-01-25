@@ -12,10 +12,11 @@ $(document).ready(function () {
     let currentWordScore = 0;
     let firstTilePlaced = false;
     let validWords = [];
+    let tilesUsed = 0;
 
     // Function to validate if a word is in the dictionary
     function isValidWord(word) {
-        console.log(`Validating word: ${word}`);
+        console.log('Validating word: ${word}');
         return validWords.includes(word.toLowerCase());
     }
 
@@ -26,7 +27,7 @@ $(document).ready(function () {
             dataType: 'text',
             success: function (data) {
                 validWords = data.split('\n').map(word => word.trim().toLowerCase());
-                console.log(`Dictionary loaded. Total words: ${validWords.length}`);
+                console.log('Dictionary loaded. Total words: ${validWords.length}');
             },
             error: function () {
                 alert('Failed to load the dictionary.');
@@ -79,7 +80,7 @@ $(document).ready(function () {
                     this.bag.push(key);
                 }
             }
-            console.log(`Bag reset. Total tiles: ${this.bag.length}`);
+            console.log('Bag reset. Total tiles: ${this.bag.length}');
         },
         // Draw a random tile from the bag
         drawTileFromBag: function () {
@@ -89,7 +90,7 @@ $(document).ready(function () {
             }
             const randIndex = Math.floor(Math.random() * this.bag.length);
             const tile = this.bag.splice(randIndex, 1)[0];
-            console.log(`Drawn tile: ${tile}`);
+            console.log('Drawn tile: ${tile}');
             return tile;
         }
     };
@@ -146,7 +147,7 @@ $(document).ready(function () {
                 .attr('letter', tile)
                 .attr('src', strSrc)
                 .appendTo('#rack');
-            console.log(`Added existing tile to rack: ${tile}`);
+            console.log('Added existing tile to rack: ${tile}');
         });
 
         // Draw new tiles to fill the rack up to RACK_MAX_TILES
@@ -160,7 +161,7 @@ $(document).ready(function () {
                     .attr('letter', key)
                     .attr('src', strSrc)
                     .appendTo('#rack');
-                console.log(`Added new tile to rack: ${key}`);
+                console.log('Added new tile to rack: ${key}');
             }
         }
 
@@ -169,46 +170,86 @@ $(document).ready(function () {
 
     // Function to update the scoreboard based on current placements
     function refreshScoreboard() {
-        let stringWord = "";
-        let score = 0;
-        let wordMult = 1;
-        let anySlotFilled = false;
-        let tilesPlaced = 0;
+    let stringWord = "";
+    let score = 0;
+    let wordMult = 1;
+    let tilesPlacedOnBoard = 0;
 
-        $('.slot').each(function () {
-            const $this = $(this);
-            const $child = $this.find('img');
-            if ($child.length > 0) {
-                anySlotFilled = true;
-                tilesPlaced++;
-                stringWord += $child.attr('letter');
-                const letterVal = parseInt($child.attr('value'), 10);
-                const letterMult = parseInt($this.attr('letter-mult'), 10);
-                score += (letterVal * letterMult);
-                wordMult *= parseInt($this.attr('word-mult'), 10);
-            } else {
-                stringWord += '.';
-            }
-        });
-
-        currentWordScore = score * wordMult;
-        $('#word').text(stringWord);
-        $('#cur-score').text(currentWordScore);
-        $('#bag').text(ObjScrabble.bag.length);
-
-        const cleanedWord = stringWord.replace(/\./g, '');
-        console.log(`Formed word: ${cleanedWord}`);
-
-        if (cleanedWord.length > 2 && cleanedWord.length === tilesPlaced && isValidWord(cleanedWord)) {
-            console.log(`Valid word formed: ${cleanedWord}`);
-            totalScore += currentWordScore;
-            $('#total-score').text(totalScore);
-            setTimeout(() => moveToNextWord(true), 500);
+    // Count tiles placed on the board
+    $('.slot').each(function () {
+        const $this = $(this);
+        const $child = $this.find('img');
+        if ($child.length > 0) {
+            tilesPlacedOnBoard++;
+            stringWord += $child.attr('letter');
+            const letterVal = parseInt($child.attr('value'), 10);
+            const letterMult = parseInt($this.attr('letter-mult'), 10);
+            score += (letterVal * letterMult);
+            wordMult *= parseInt($this.attr('word-mult'), 10);
+        } else {
+            stringWord += '.';
         }
+    });
 
-        $('#reset').prop('disabled', !anySlotFilled);
+    currentWordScore = score * wordMult;
+    $('#word').text(stringWord);
+    $('#cur-score').text(currentWordScore);
+
+    // Update the remaining tiles count
+    const remainingTiles = TOTAL_TILES - tilesUsed - tilesPlacedOnBoard;
+    $('#bag').text(remainingTiles);
+
+    const cleanedWord = stringWord.replace(/\./g, '');
+    if (cleanedWord.length > 2 && cleanedWord.length === tilesPlacedOnBoard && isValidWord(cleanedWord)) {
+        totalScore += currentWordScore;
+        tilesUsed += tilesPlacedOnBoard; // Increment tiles used when a word is valid
+        $('#total-score').text(totalScore);
+        setTimeout(() => moveToNextWord(true), 500);
+    }
+}
+
+// Update drawHand to Avoid Resetting Remaining Tiles
+function drawHand(existingTiles = []) {
+    const $rack = $('#rack');
+    $rack.empty();
+
+    if (ObjScrabble.bag.length <= 3) {
+        const $gameOverMessage = $('<div>').addClass('game-over').text('GAME OVER');
+        $rack.append($gameOverMessage);
+        $('#next-word').prop('disabled', true);
+        $('#reset').prop('disabled', false);
+        return;
     }
 
+    const $tile = $('<img>').addClass('tile draggable ui-widget-content');
+
+    // Append existing tiles back to the rack
+    existingTiles.forEach(tile => {
+        const strSrc = 'images/tiles/Scrabble_Tile_' + tile + '.jpg';
+        const $existingTile = $tile.clone()
+            .attr('value', ObjScrabble.dictTiles[tile].value)
+            .attr('letter', tile)
+            .attr('src', strSrc)
+            .appendTo('#rack');
+    });
+
+    // Draw new tiles to fill the rack up to RACK_MAX_TILES
+    const newTilesCount = RACK_MAX_TILES - existingTiles.length;
+    for (let i = 0; i < newTilesCount; i++) {
+        const key = ObjScrabble.drawTileFromBag();
+        if (key) {
+            const strSrc = 'images/tiles/Scrabble_Tile_' + key + '.jpg';
+            const $newTile = $tile.clone()
+                .attr('value', ObjScrabble.dictTiles[key].value)
+                .attr('letter', key)
+                .attr('src', strSrc)
+                .appendTo('#rack');
+        }
+    }
+
+    makeTilesDraggable();
+}
+    
     // Make tiles draggable
     function makeTilesDraggable() {
         $('.tile').draggable({
