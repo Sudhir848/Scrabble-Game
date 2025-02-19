@@ -20,7 +20,7 @@ $(document).ready(function () {
         return validWords.includes(word.toLowerCase());
     }
 
-    // Function to load the dictionary from a file
+    // Function to load the dictionary
     function loadDictionary() {
         return $.ajax({
             url: 'dictionary.txt',
